@@ -1,0 +1,308 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).map(post => ({
+    id: post.id,
+    title: post.data.title,
+    description: post.data.description,
+    pubDate: post.data.pubDate.toISOString().split('T')[0],
+    heroImage: post.data.heroImage?.src || ''
+}));
+
+const postsJson = JSON.stringify(posts);
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`Market Insights | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+		<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+		<style>
+			main {
+				width: 1200px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 2em 0;
+			}
+			.market-header {
+				margin-bottom: 2rem;
+				text-align: center;
+			}
+			.market-header h1 {
+				font-size: 2.5rem;
+				margin-bottom: 0.5rem;
+				background: linear-gradient(to right, #fff, var(--accent));
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+			}
+			.chart-container-wrapper {
+				position: relative;
+				background: rgba(15, 18, 25, 0.5);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 24px;
+				padding: 20px;
+				backdrop-filter: blur(10px);
+				margin-bottom: 2rem;
+				box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+			}
+			#chart-container {
+				height: 500px;
+				width: 100%;
+			}
+			.news-preview-card {
+				position: absolute;
+				display: none;
+				z-index: 1000;
+				width: 300px;
+				background: rgba(25, 28, 35, 0.95);
+				border: 1px solid var(--accent);
+				border-radius: 16px;
+				padding: 16px;
+				box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+				pointer-events: none;
+				transition: opacity 0.2s ease;
+			}
+			.news-preview-card h4 {
+				margin: 0 0 8px 0;
+				color: var(--accent);
+				font-size: 1.1rem;
+			}
+			.news-preview-card p {
+				margin: 0;
+				font-size: 0.9rem;
+				color: #ccc;
+				line-height: 1.4;
+			}
+			.spotlight-section {
+				display: none;
+				margin-top: 2rem;
+				padding: 2rem;
+				background: rgba(255, 255, 255, 0.03);
+				border-radius: 20px;
+				border: 1px solid rgba(255, 255, 255, 0.05);
+			}
+			.spotlight-section.active {
+				display: block;
+				animation: fadeIn 0.3s ease;
+			}
+			@keyframes fadeIn {
+				from { opacity: 0; transform: translateY(10px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+			.spotlight-content h3 {
+				color: var(--accent);
+				margin-bottom: 1rem;
+			}
+			.spotlight-content a {
+				display: inline-block;
+				margin-top: 1rem;
+				padding: 0.8rem 1.5rem;
+				background: var(--accent);
+				color: #000;
+				text-decoration: none;
+				border-radius: 30px;
+				font-weight: 600;
+				transition: transform 0.2s ease;
+			}
+			.spotlight-content a:hover {
+				transform: scale(1.05);
+			}
+
+			@media (max-width: 768px) {
+				#chart-container {
+					height: 350px;
+				}
+				.news-preview-card {
+					display: none !important; /* Always use spotlight on mobile */
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="market-header">
+				<h1>Market Insights</h1>
+				<p>나스닥 시장 변동과 AI 리포트의 상관관계를 확인하세요.</p>
+			</section>
+
+			<div class="chart-container-wrapper">
+				<div id="chart-container"></div>
+				<div id="news-preview" class="news-preview-card">
+					<h4 id="preview-title"></h4>
+					<p id="preview-desc"></p>
+				</div>
+			</div>
+
+			<div id="spotlight" class="spotlight-section">
+				<div class="spotlight-content">
+					<p class="date" id="spotlight-date" style="color: #888; font-size: 0.9rem;"></p>
+					<h3 id="spotlight-title"></h3>
+					<p id="spotlight-desc"></p>
+					<a id="spotlight-link" href="#">전체 리포트 읽기</a>
+				</div>
+			</div>
+		</main>
+		<Footer />
+
+		<script is:inline define:vars={{ postsJson }}>
+			const posts = JSON.parse(postsJson);
+			const chartContainer = document.getElementById('chart-container');
+			const newsPreview = document.getElementById('news-preview');
+			const spotlight = document.getElementById('spotlight');
+			
+			function checkAndInit() {
+				if (typeof LightweightCharts === 'undefined') {
+					console.log('Waiting for LightweightCharts...');
+					setTimeout(checkAndInit, 100);
+					return;
+				}
+				initChart();
+			}
+
+			async function initChart() {
+				const chartContainer = document.getElementById('chart-container');
+				try {
+					console.log('Fetching NASDAQ data...');
+					const response = await fetch('/data/nasdaq.json');
+					if (!response.ok) throw new Error('Failed to fetch NASDAQ data');
+					const data = await response.json();
+					console.log(`Data loaded: ${data.length} points`);
+
+					const chart = LightweightCharts.createChart(chartContainer, {
+						width: chartContainer.clientWidth,
+						height: 500,
+						layout: {
+							background: { type: 'solid', color: 'transparent' },
+							textColor: '#d1d4dc',
+						},
+						grid: {
+							vertLines: { color: 'rgba(42, 46, 57, 0.3)' },
+							horzLines: { color: 'rgba(42, 46, 57, 0.3)' },
+						},
+						crosshair: {
+							mode: LightweightCharts.CrosshairMode.Normal,
+						},
+						rightPriceScale: {
+							borderColor: 'rgba(197, 203, 206, 0.8)',
+							autoScale: true,
+						},
+						timeScale: {
+							borderColor: 'rgba(197, 203, 206, 0.8)',
+							timeVisible: true,
+						},
+					});
+
+					const candleSeries = chart.addCandlestickSeries({
+						upColor: '#26a69a',
+						downColor: '#ef5350',
+						borderVisible: false,
+						wickUpColor: '#26a69a',
+						wickDownColor: '#ef5350',
+					});
+
+					console.log('Setting data to series...');
+					candleSeries.setData(data);
+
+					// Add markers for news
+					if (posts && posts.length > 0) {
+						const markers = posts.map(post => ({
+							time: post.pubDate,
+							position: 'aboveBar',
+							color: '#e91e63',
+							shape: 'pin',
+							text: 'News',
+						}));
+						candleSeries.setMarkers(markers);
+					}
+
+					// Focus on the last 2 weeks
+					if (data.length > 0) {
+						const lastPoint = data[data.length - 1].time;
+						const lastDate = new Date(lastPoint);
+						const firstDate = new Date(lastDate);
+						firstDate.setDate(firstDate.getDate() - 14); // 14 days ago
+						
+						chart.timeScale().setVisibleRange({
+							from: firstDate.toISOString().split('T')[0],
+							to: lastDate.toISOString().split('T')[0],
+						});
+					} else {
+						chart.timeScale().fitContent();
+					}
+					console.log('Chart initialized and focused on last 2 weeks');
+
+					window.addEventListener('resize', () => {
+						chart.applyOptions({ width: chartContainer.clientWidth });
+					});
+					
+					setupInteractions(chart, candleSeries);
+				} catch (err) {
+					console.error('Chart Error:', err);
+					chartContainer.innerHTML = `<p style="color: #ef5350; padding: 20px;">차트를 불러오는 중 오류가 발생했습니다: ${err.message}</p>`;
+				}
+			}
+
+			function setupInteractions(chart, candleSeries) {
+				const newsPreview = document.getElementById('news-preview');
+				const spotlight = document.getElementById('spotlight');
+				const chartContainer = document.getElementById('chart-container');
+
+				chart.subscribeCrosshairMove(param => {
+					if (
+						param.point === undefined ||
+						!param.time ||
+						param.point.x < 0 ||
+						param.point.x > chartContainer.clientWidth ||
+						param.point.y < 0 ||
+						param.point.y > chartContainer.clientHeight
+					) {
+						newsPreview.style.display = 'none';
+						return;
+					}
+
+					const dateStr = typeof param.time === 'string' ? param.time : 
+									new Date(param.time * 1000).toISOString().split('T')[0];
+					
+					const post = posts.find(p => p.pubDate === dateStr);
+
+					if (post) {
+						newsPreview.style.display = 'block';
+						newsPreview.style.left = (param.point.x + 20) + 'px';
+						newsPreview.style.top = (param.point.y + 20) + 'px';
+						document.getElementById('preview-title').innerText = post.title;
+						document.getElementById('preview-desc').innerText = post.description || '요약 내용이 없습니다.';
+						updateSpotlight(post);
+					} else {
+						newsPreview.style.display = 'none';
+					}
+				});
+
+				chart.subscribeClick(param => {
+					if (!param.time) return;
+					const dateStr = typeof param.time === 'string' ? param.time : 
+									new Date(param.time * 1000).toISOString().split('T')[0];
+					const post = posts.find(p => p.pubDate === dateStr);
+					if (post) {
+						updateSpotlight(post);
+						spotlight.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+					}
+				});
+
+				function updateSpotlight(post) {
+					spotlight.classList.add('active');
+					document.getElementById('spotlight-date').innerText = post.pubDate;
+					document.getElementById('spotlight-title').innerText = post.title;
+					document.getElementById('spotlight-desc').innerText = post.description || '요약 내용이 없습니다.';
+					document.getElementById('spotlight-link').href = `/blog/${post.id}/`;
+				}
+			}
+
+			checkAndInit();
+		</script>
+	</body>
+</html>

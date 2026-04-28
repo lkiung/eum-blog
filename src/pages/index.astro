@@ -71,17 +71,39 @@ const posts = (await getCollection('blog')).sort(
 	<body>
 		<Header />
 		<main>
-			<section>
+			<section class="hero">
+				<h1>Eum Village AI</h1>
+				<p class="tagline">지능형 에이전트 기반 기업 분석 및 투자 인사이트</p>
+				<div class="hero-stats">
+					<div class="stat">
+						<span class="label">최근 업데이트</span>
+						<span class="value">Daily</span>
+					</div>
+					<div class="stat">
+						<span class="label">데이터 소스</span>
+						<span class="value">News & Telegram</span>
+					</div>
+				</div>
+			</section>
+
+			<section class="reports-section">
+				<div class="section-header">
+					<h2>최신 분석 리포트</h2>
+					<a href="/market" class="view-all">시장 차트로 보기 →</a>
+				</div>
 				<ul>
 					{
 						posts.map((post) => (
 							<li>
-								<a href={`/blog/${post.id}/`}>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-									<h4 class="title">{post.data.title}</h4>
-									{post.data.description && <p class="description">{post.data.description}</p>}
+								<a href={`/blog/${post.id}/`} class="report-card">
+									<div class="card-content">
+										<p class="date">
+											<FormattedDate date={post.data.pubDate} />
+										</p>
+										<h3 class="title">{post.data.title}</h3>
+										{post.data.description && <p class="description">{post.data.description}</p>}
+									</div>
+									<div class="card-arrow">→</div>
 								</a>
 							</li>
 						))
@@ -89,6 +111,133 @@ const posts = (await getCollection('blog')).sort(
 				</ul>
 			</section>
 		</main>
+
+		<style>
+			main {
+				width: 900px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+				padding: 4em 1em;
+			}
+			.hero {
+				text-align: center;
+				margin-bottom: 6rem;
+				animation: fadeInUp 0.8s ease;
+			}
+			@keyframes fadeInUp {
+				from { opacity: 0; transform: translateY(20px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+			.hero h1 {
+				font-size: 4rem;
+				font-weight: 800;
+				margin-bottom: 1rem;
+				background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				letter-spacing: -0.03em;
+			}
+			.tagline {
+				font-size: 1.5rem;
+				color: var(--text-secondary);
+				margin-bottom: 3rem;
+			}
+			.hero-stats {
+				display: flex;
+				justify-content: center;
+				gap: 4rem;
+			}
+			.stat {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+			}
+			.stat .label {
+				font-size: 0.9rem;
+				color: #888;
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+			}
+			.stat .value {
+				font-size: 1.8rem;
+				font-weight: 700;
+				color: var(--accent);
+			}
+
+			.section-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-end;
+				margin-bottom: 2rem;
+				border-bottom: 1px solid rgba(255,255,255,0.1);
+				padding-bottom: 1rem;
+			}
+			.section-header h2 {
+				margin: 0;
+				font-size: 1.8rem;
+			}
+			.view-all {
+				color: var(--accent);
+				text-decoration: none;
+				font-size: 0.9rem;
+				font-weight: 600;
+			}
+
+			ul {
+				list-style-type: none;
+				padding: 0;
+				margin: 0;
+			}
+			.report-card {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 2rem 0;
+				border-bottom: 1px solid rgba(255,255,255,0.05);
+				text-decoration: none;
+				transition: all 0.3s ease;
+			}
+			.report-card:hover {
+				padding-left: 1rem;
+				background: rgba(255,255,255,0.02);
+			}
+			.report-card:hover .title {
+				color: var(--accent);
+			}
+			.report-card:hover .card-arrow {
+				transform: translateX(10px);
+				color: var(--accent);
+			}
+			.card-content {
+				flex: 1;
+			}
+			.title {
+				margin: 0.5rem 0;
+				font-size: 1.5rem;
+				color: #fff;
+			}
+			.date {
+				margin: 0;
+				color: #666;
+				font-size: 0.9rem;
+				font-family: monospace;
+			}
+			.description {
+				margin: 0;
+				color: #aaa;
+				font-size: 1rem;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+			}
+			.card-arrow {
+				font-size: 1.5rem;
+				color: #333;
+				transition: all 0.3s ease;
+				margin-left: 2rem;
+			}
+		</style>
 		<Footer />
 	</body>
 </html>
