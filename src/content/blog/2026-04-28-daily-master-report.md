@@ -1,5 +1,5 @@
 ---
-title: "[2026-04-28] 반도체 병목현상 진화 전략 브리핑 — 메모리 부족에서 컴퓨팅 인프라 위기까지"
+title: "[2026-04-28] 카르텔 균열: UAE의 ADNOC 탈퇴가 에너지 거버넌스의 전환을 알리는 방법"
 description: "Latest corporate analysis data and market insights."
 pubDate: "2026-04-28"
 heroImage: "../../assets/hero.png"
