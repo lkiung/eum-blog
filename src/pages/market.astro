@@ -5,13 +5,19 @@ import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog')).map(post => ({
-    id: post.id,
-    title: post.data.title,
-    description: post.data.description,
-    pubDate: post.data.pubDate.toISOString().split('T')[0],
-    heroImage: post.data.heroImage?.src || ''
-}));
+const posts = (await getCollection('blog')).map(post => {
+    const d = post.data.pubDate;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return {
+        id: post.id,
+        title: post.data.title,
+        description: post.data.description,
+        pubDate: `${year}-${month}-${day}`,
+        heroImage: post.data.heroImage?.src || ''
+    };
+});
 
 const postsJson = JSON.stringify(posts);
 ---
@@ -20,7 +26,7 @@ const postsJson = JSON.stringify(posts);
 <html lang="ko">
 	<head>
 		<BaseHead title={`Market Insights | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-		<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+		<script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 		<style>
 			main {
 				width: 1200px;
@@ -131,7 +137,7 @@ const postsJson = JSON.stringify(posts);
 			</section>
 
 			<div class="chart-container-wrapper">
-				<div id="chart-container"></div>
+				<div id="chart-container" data-posts={postsJson}></div>
 				<div id="news-preview" class="news-preview-card">
 					<h4 id="preview-title"></h4>
 					<p id="preview-desc"></p>
@@ -149,32 +155,46 @@ const postsJson = JSON.stringify(posts);
 		</main>
 		<Footer />
 
-		<script is:inline define:vars={{ postsJson }}>
-			const posts = JSON.parse(postsJson);
-			const chartContainer = document.getElementById('chart-container');
-			const newsPreview = document.getElementById('news-preview');
-			const spotlight = document.getElementById('spotlight');
-			
+		<script is:inline>
+			console.log('Market Insight Script Loaded');
+			let chartInstance = null;
+			let isInitializing = false;
+
 			function checkAndInit() {
 				if (typeof LightweightCharts === 'undefined') {
-					console.log('Waiting for LightweightCharts...');
+					console.log('Waiting for LightweightCharts library...');
 					setTimeout(checkAndInit, 100);
 					return;
 				}
-				initChart();
+				if (!isInitializing) {
+					initChart();
+				}
 			}
 
 			async function initChart() {
-				const chartContainer = document.getElementById('chart-container');
+				const container = document.getElementById('chart-container');
+				if (!container || isInitializing) return;
+				
+				isInitializing = true;
 				try {
+					const postsData = container.getAttribute('data-posts');
+					const posts = JSON.parse(postsData);
+					console.log('Posts data parsed:', posts.length);
+					
+					if (chartInstance) {
+						chartInstance.remove();
+						chartInstance = null;
+					}
+					container.innerHTML = '';
+					
 					console.log('Fetching NASDAQ data...');
 					const response = await fetch('/data/nasdaq.json');
-					if (!response.ok) throw new Error('Failed to fetch NASDAQ data');
+					if (!response.ok) throw new Error('Data fetch failed');
 					const data = await response.json();
-					console.log(`Data loaded: ${data.length} points`);
+					console.log('Market data loaded:', data.length);
 
-					const chart = LightweightCharts.createChart(chartContainer, {
-						width: chartContainer.clientWidth,
+					const chart = LightweightCharts.createChart(container, {
+						width: container.clientWidth,
 						height: 500,
 						layout: {
 							background: { type: 'solid', color: 'transparent' },
@@ -184,18 +204,10 @@ const postsJson = JSON.stringify(posts);
 							vertLines: { color: 'rgba(42, 46, 57, 0.3)' },
 							horzLines: { color: 'rgba(42, 46, 57, 0.3)' },
 						},
-						crosshair: {
-							mode: LightweightCharts.CrosshairMode.Normal,
-						},
-						rightPriceScale: {
-							borderColor: 'rgba(197, 203, 206, 0.8)',
-							autoScale: true,
-						},
-						timeScale: {
-							borderColor: 'rgba(197, 203, 206, 0.8)',
-							timeVisible: true,
-						},
+						rightPriceScale: { borderColor: 'rgba(197, 203, 206, 0.8)', autoScale: true },
+						timeScale: { borderColor: 'rgba(197, 203, 206, 0.8)', timeVisible: true },
 					});
+					chartInstance = chart;
 
 					const candleSeries = chart.addCandlestickSeries({
 						upColor: '#26a69a',
@@ -204,63 +216,67 @@ const postsJson = JSON.stringify(posts);
 						wickUpColor: '#26a69a',
 						wickDownColor: '#ef5350',
 					});
+					window.candleSeries = candleSeries; // For debugging
 
-					console.log('Setting data to series...');
 					candleSeries.setData(data);
 
-					// Add markers for news
+					// Markers with compatible v3.8.0 shapes
 					if (posts && posts.length > 0) {
-						const markers = posts.map(post => ({
-							time: post.pubDate,
-							position: 'aboveBar',
-							color: '#e91e63',
-							shape: 'pin',
-							text: 'News',
-						}));
+						const candleTimes = data.map(d => d.time);
+						const markers = posts.map(post => {
+							let bestTime = post.pubDate;
+							if (!candleTimes.includes(bestTime)) {
+								const pastTimes = candleTimes.filter(t => t <= bestTime);
+								bestTime = pastTimes.length > 0 ? pastTimes[pastTimes.length - 1] : null;
+							}
+							
+							if (bestTime) {
+								return {
+									time: bestTime,
+									position: 'aboveBar',
+									color: '#ffff00', // Yellow for high contrast
+									shape: 'arrowDown', // arrowDown is very stable in v3.8.0
+									text: 'Insight',
+								};
+							}
+							return null;
+						}).filter(m => m !== null);
+						
+						console.log('Setting markers:', markers.length);
 						candleSeries.setMarkers(markers);
 					}
 
-					// Focus on the last 2 weeks
-					if (data.length > 0) {
-						const lastPoint = data[data.length - 1].time;
-						const lastDate = new Date(lastPoint);
-						const firstDate = new Date(lastDate);
-						firstDate.setDate(firstDate.getDate() - 14); // 14 days ago
-						
+					// Zoom to last 2 weeks
+					if (data.length > 10) {
+						const lastIndex = data.length - 1;
+						const startIndex = Math.max(0, lastIndex - 12);
 						chart.timeScale().setVisibleRange({
-							from: firstDate.toISOString().split('T')[0],
-							to: lastDate.toISOString().split('T')[0],
+							from: data[startIndex].time,
+							to: data[lastIndex].time,
 						});
-					} else {
-						chart.timeScale().fitContent();
 					}
-					console.log('Chart initialized and focused on last 2 weeks');
 
 					window.addEventListener('resize', () => {
-						chart.applyOptions({ width: chartContainer.clientWidth });
+						if (chartInstance) chartInstance.applyOptions({ width: container.clientWidth });
 					});
 					
-					setupInteractions(chart, candleSeries);
+					setupInteractions(chart, candleSeries, posts);
+					console.log('Chart initialization complete');
 				} catch (err) {
 					console.error('Chart Error:', err);
-					chartContainer.innerHTML = `<p style="color: #ef5350; padding: 20px;">차트를 불러오는 중 오류가 발생했습니다: ${err.message}</p>`;
+					container.innerHTML = `<p style="color: #ef5350; padding: 20px;">차트를 불러오는 중 오류가 발생했습니다: ${err.message}</p>`;
+				} finally {
+					isInitializing = false;
 				}
 			}
 
-			function setupInteractions(chart, candleSeries) {
+			function setupInteractions(chart, candleSeries, posts) {
 				const newsPreview = document.getElementById('news-preview');
 				const spotlight = document.getElementById('spotlight');
-				const chartContainer = document.getElementById('chart-container');
+				const container = document.getElementById('chart-container');
 
 				chart.subscribeCrosshairMove(param => {
-					if (
-						param.point === undefined ||
-						!param.time ||
-						param.point.x < 0 ||
-						param.point.x > chartContainer.clientWidth ||
-						param.point.y < 0 ||
-						param.point.y > chartContainer.clientHeight
-					) {
+					if (!param.point || !param.time) {
 						newsPreview.style.display = 'none';
 						return;
 					}
@@ -269,14 +285,12 @@ const postsJson = JSON.stringify(posts);
 									new Date(param.time * 1000).toISOString().split('T')[0];
 					
 					const post = posts.find(p => p.pubDate === dateStr);
-
 					if (post) {
 						newsPreview.style.display = 'block';
 						newsPreview.style.left = (param.point.x + 20) + 'px';
 						newsPreview.style.top = (param.point.y + 20) + 'px';
 						document.getElementById('preview-title').innerText = post.title;
-						document.getElementById('preview-desc').innerText = post.description || '요약 내용이 없습니다.';
-						updateSpotlight(post);
+						document.getElementById('preview-desc').innerText = post.description || '';
 					} else {
 						newsPreview.style.display = 'none';
 					}
@@ -288,18 +302,14 @@ const postsJson = JSON.stringify(posts);
 									new Date(param.time * 1000).toISOString().split('T')[0];
 					const post = posts.find(p => p.pubDate === dateStr);
 					if (post) {
-						updateSpotlight(post);
-						spotlight.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+						spotlight.classList.add('active');
+						document.getElementById('spotlight-date').innerText = post.pubDate;
+						document.getElementById('spotlight-title').innerText = post.title;
+						document.getElementById('spotlight-desc').innerText = post.description || '';
+						document.getElementById('spotlight-link').href = `/blog/${post.id}/`;
+						spotlight.scrollIntoView({ behavior: 'smooth' });
 					}
 				});
-
-				function updateSpotlight(post) {
-					spotlight.classList.add('active');
-					document.getElementById('spotlight-date').innerText = post.pubDate;
-					document.getElementById('spotlight-title').innerText = post.title;
-					document.getElementById('spotlight-desc').innerText = post.description || '요약 내용이 없습니다.';
-					document.getElementById('spotlight-link').href = `/blog/${post.id}/`;
-				}
 			}
 
 			checkAndInit();
