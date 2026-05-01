@@ -20,6 +20,7 @@ const posts = (await getCollection('blog')).map(post => {
 });
 
 const postsJson = JSON.stringify(posts);
+const postsBase64 = Buffer.from(postsJson).toString('base64');
 ---
 
 <!doctype html>
@@ -63,25 +64,28 @@ const postsJson = JSON.stringify(posts);
 				position: absolute;
 				display: none;
 				z-index: 1000;
-				width: 300px;
-				background: rgba(25, 28, 35, 0.95);
+				width: 320px;
+				background: rgba(15, 18, 25, 0.95);
 				border: 1px solid var(--accent);
 				border-radius: 16px;
-				padding: 16px;
-				box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+				padding: 20px;
+				box-shadow: 0 15px 40px rgba(0,0,0,0.6);
 				pointer-events: none;
-				transition: opacity 0.2s ease;
+				backdrop-filter: blur(15px);
+				transition: opacity 0.1s ease;
 			}
 			.news-preview-card h4 {
-				margin: 0 0 8px 0;
+				margin: 0 0 10px 0;
 				color: var(--accent);
 				font-size: 1.1rem;
+				font-weight: 700;
+				line-height: 1.3;
 			}
 			.news-preview-card p {
 				margin: 0;
-				font-size: 0.9rem;
-				color: #ccc;
-				line-height: 1.4;
+				font-size: 0.95rem;
+				color: #e0e0e0;
+				line-height: 1.5;
 			}
 			.spotlight-section {
 				display: none;
@@ -137,7 +141,7 @@ const postsJson = JSON.stringify(posts);
 			</section>
 
 			<div class="chart-container-wrapper">
-				<div id="chart-container" data-posts={postsJson}></div>
+				<div id="chart-container" data-posts={postsBase64}></div>
 				<div id="news-preview" class="news-preview-card">
 					<h4 id="preview-title"></h4>
 					<p id="preview-desc"></p>
@@ -178,8 +182,9 @@ const postsJson = JSON.stringify(posts);
 				isInitializing = true;
 				try {
 					const postsData = container.getAttribute('data-posts');
-					const posts = JSON.parse(postsData);
-					console.log('Posts data parsed:', posts.length);
+					// UTF-8 safe Base64 decode
+					const posts = JSON.parse(decodeURIComponent(escape(atob(postsData))));
+					console.log('Posts data parsed (Base64 UTF-8):', posts.length, posts);
 					
 					if (chartInstance) {
 						chartInstance.remove();
@@ -219,30 +224,48 @@ const postsJson = JSON.stringify(posts);
 					window.candleSeries = candleSeries; // For debugging
 
 					candleSeries.setData(data);
+					
+					// DEBUG: Log types and values
+					if (data.length > 0 && posts.length > 0) {
+						console.log('DEBUG MATCHING:');
+						console.log('Candle[last].time:', data[data.length-1].time, typeof data[data.length-1].time);
+						console.log('Post[0].pubDate:', posts[0].pubDate, typeof posts[0].pubDate);
+					}
 
 					// Markers with compatible v3.8.0 shapes
 					if (posts && posts.length > 0) {
-						const candleTimes = data.map(d => d.time);
+						// Helper to convert YYYY-MM-DD to {year, month, day}
+						const toBusinessDay = (dateStr) => {
+							const [y, m, d] = dateStr.split('-').map(Number);
+							return { year: y, month: m, day: d };
+						};
+
+						// Helper to convert {year, month, day} to YYYY-MM-DD
+						const toString = (bd) => `${bd.year}-${String(bd.month).padStart(2, '0')}-${String(bd.day).padStart(2, '0')}`;
+
+						const candleTimesStr = data.map(d => typeof d.time === 'string' ? d.time : toString(d.time));
+						
 						const markers = posts.map(post => {
-							let bestTime = post.pubDate;
-							if (!candleTimes.includes(bestTime)) {
-								const pastTimes = candleTimes.filter(t => t <= bestTime);
-								bestTime = pastTimes.length > 0 ? pastTimes[pastTimes.length - 1] : null;
+							let bestTimeStr = post.pubDate;
+							if (!candleTimesStr.includes(bestTimeStr)) {
+								const pastTimes = candleTimesStr.filter(t => t <= bestTimeStr);
+								bestTimeStr = pastTimes.length > 0 ? pastTimes[pastTimes.length - 1] : null;
 							}
 							
-							if (bestTime) {
+							if (bestTimeStr) {
 								return {
-									time: bestTime,
+									time: toBusinessDay(bestTimeStr),
 									position: 'aboveBar',
-									color: '#ffff00', // Yellow for high contrast
-									shape: 'arrowDown', // arrowDown is very stable in v3.8.0
-									text: 'Insight',
+									color: '#e91e63', 
+									shape: 'pin',
+									size: 1.5,
+									text: 'REPORT',
 								};
 							}
 							return null;
 						}).filter(m => m !== null);
 						
-						console.log('Setting markers:', markers.length);
+						console.log('Setting markers:', markers.length, markers);
 						candleSeries.setMarkers(markers);
 					}
 
@@ -282,13 +305,22 @@ const postsJson = JSON.stringify(posts);
 					}
 
 					const dateStr = typeof param.time === 'string' ? param.time : 
-									new Date(param.time * 1000).toISOString().split('T')[0];
+									`${param.time.year}-${String(param.time.month).padStart(2, '0')}-${String(param.time.day).padStart(2, '0')}`;
 					
 					const post = posts.find(p => p.pubDate === dateStr);
 					if (post) {
 						newsPreview.style.display = 'block';
-						newsPreview.style.left = (param.point.x + 20) + 'px';
-						newsPreview.style.top = (param.point.y + 20) + 'px';
+						
+						// Smart positioning to stay within container
+						const containerRect = container.getBoundingClientRect();
+						let left = param.point.x + 20;
+						let top = param.point.y + 20;
+						
+						if (left + 320 > containerRect.width) left = param.point.x - 340;
+						if (top + 150 > containerRect.height) top = param.point.y - 170;
+
+						newsPreview.style.left = left + 'px';
+						newsPreview.style.top = top + 'px';
 						document.getElementById('preview-title').innerText = post.title;
 						document.getElementById('preview-desc').innerText = post.description || '';
 					} else {
@@ -299,7 +331,7 @@ const postsJson = JSON.stringify(posts);
 				chart.subscribeClick(param => {
 					if (!param.time) return;
 					const dateStr = typeof param.time === 'string' ? param.time : 
-									new Date(param.time * 1000).toISOString().split('T')[0];
+									`${param.time.year}-${String(param.time.month).padStart(2, '0')}-${String(param.time.day).padStart(2, '0')}`;
 					const post = posts.find(p => p.pubDate === dateStr);
 					if (post) {
 						spotlight.classList.add('active');
