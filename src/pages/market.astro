@@ -271,6 +271,19 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 					trendSeries.setData(trendData);
 					upperSeries.setData(upperData);
 					lowerSeries.setData(lowerData);
+
+					// EMA Series
+					const ema5Series = chart.addLineSeries({ color: '#ffffff', lineWidth: 1, title: 'EMA 5', priceLineVisible: false, lastValueVisible: false });
+					const ema20Series = chart.addLineSeries({ color: '#ffeb3b', lineWidth: 1, title: 'EMA 20', priceLineVisible: false, lastValueVisible: false });
+					const ema60Series = chart.addLineSeries({ color: '#4caf50', lineWidth: 1, title: 'EMA 60', priceLineVisible: false, lastValueVisible: false });
+					const ema120Series = chart.addLineSeries({ color: '#2196f3', lineWidth: 1, title: 'EMA 120', priceLineVisible: false, lastValueVisible: false });
+					const ema200Series = chart.addLineSeries({ color: '#9c27b0', lineWidth: 1, title: 'EMA 200', priceLineVisible: false, lastValueVisible: false });
+
+					ema5Series.setData(data.map(d => ({ time: d.time, value: d.ema5 })));
+					ema20Series.setData(data.map(d => ({ time: d.time, value: d.ema20 })));
+					ema60Series.setData(data.map(d => ({ time: d.time, value: d.ema60 })));
+					ema120Series.setData(data.map(d => ({ time: d.time, value: d.ema120 })));
+					ema200Series.setData(data.map(d => ({ time: d.time, value: d.ema200 })));
 					
 					// DEBUG: Log types and values
 					if (data.length > 0 && posts.length > 0) {
