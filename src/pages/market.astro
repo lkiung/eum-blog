@@ -57,7 +57,7 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 				box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 			}
 			#chart-container {
-				height: 500px;
+				height: 600px;
 				width: 100%;
 			}
 			.news-preview-card {
@@ -200,7 +200,7 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 
 					const chart = LightweightCharts.createChart(container, {
 						width: container.clientWidth,
-						height: 500,
+						height: 600,
 						layout: {
 							background: { type: 'solid', color: 'transparent' },
 							textColor: '#d1d4dc',
@@ -209,8 +209,15 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 							vertLines: { color: 'rgba(42, 46, 57, 0.3)' },
 							horzLines: { color: 'rgba(42, 46, 57, 0.3)' },
 						},
-						rightPriceScale: { borderColor: 'rgba(197, 203, 206, 0.8)', autoScale: true },
-						timeScale: { borderColor: 'rgba(197, 203, 206, 0.8)', timeVisible: true },
+						rightPriceScale: { 
+							borderColor: 'rgba(197, 203, 206, 0.8)', 
+							autoScale: true,
+							mode: 1, // Logarithmic
+						},
+						timeScale: { 
+							borderColor: 'rgba(197, 203, 206, 0.8)', 
+							timeVisible: true,
+						},
 					});
 					chartInstance = chart;
 
@@ -224,6 +231,46 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 					window.candleSeries = candleSeries; // For debugging
 
 					candleSeries.setData(data);
+
+					console.log('Fetching Macro data...');
+					const macroResponse = await fetch('/data/nasdaq_macro.json');
+					const macroData = await macroResponse.json();
+					console.log('Macro data loaded:', macroData.length);
+
+					const trendSeries = chart.addLineSeries({
+						color: '#ff9800',
+						lineWidth: 2,
+						lineStyle: 2, // Dashed
+						title: 'Robust Trend',
+						priceLineVisible: false,
+						lastValueVisible: false,
+					});
+
+					const upperSeries = chart.addLineSeries({
+						color: 'rgba(239, 83, 80, 0.5)',
+						lineWidth: 1,
+						lineStyle: 3, // Dotted
+						title: 'Upper Bound (Z=2)',
+						priceLineVisible: false,
+						lastValueVisible: false,
+					});
+
+					const lowerSeries = chart.addLineSeries({
+						color: 'rgba(38, 166, 154, 0.5)',
+						lineWidth: 1,
+						lineStyle: 3, // Dotted
+						title: 'Lower Bound (Z=-2)',
+						priceLineVisible: false,
+						lastValueVisible: false,
+					});
+
+					const trendData = macroData.map(d => ({ time: d.time, value: d.trend }));
+					const upperData = macroData.map(d => ({ time: d.time, value: d.upper }));
+					const lowerData = macroData.map(d => ({ time: d.time, value: d.lower }));
+					
+					trendSeries.setData(trendData);
+					upperSeries.setData(upperData);
+					lowerSeries.setData(lowerData);
 					
 					// DEBUG: Log types and values
 					if (data.length > 0 && posts.length > 0) {
