@@ -1,14 +1,10 @@
----
+--- 
 title: "[2026-05-02] 호르무즈 위기, 재고 시계 9월 임계점 향해 가며 원유 100달러 돌파"
 description: "Latest corporate analysis data and market insights."
 pubDate: "2026-05-02"
 heroImage: "../../assets/hero.png"
+category: "Daily Report"
 ---
----
-title: Daily AI Market Intelligence
-date: 2026-05-02
----
-
 # 호르무즈 위기, 재고 시계 9월 임계점 향해 가며 원유 100달러 돌파
 ______________________________________________________________________
 
@@ -409,6 +405,3 @@ ______________________________________________________________________
 
 보고서 종료
 *Eum-Vilage AI Infrastructure가 생성*
-
-
-

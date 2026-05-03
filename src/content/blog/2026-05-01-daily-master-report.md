@@ -1,14 +1,10 @@
----
+--- 
 title: "[2026-05-01] 호르무즈 대치, 150달러 유가 시나리오 부상하며 공급 충격 경고 발생"
 description: "Latest corporate analysis data and market insights."
 pubDate: "2026-05-01"
 heroImage: "../../assets/hero.png"
+category: "Daily Report"
 ---
----
-title: Daily AI Market Intelligence
-date: 2026-05-01
----
-
 # 호르무즈 대치, 150달러 유가 시나리오 부상하며 공급 충격 경고 발생
 ______________________________________________________________________
 
@@ -428,6 +424,3 @@ ______________________________________________________________________
 
 리포트 종료
 *Eum-Vilage AI Infrastructure가 생성*
-
-
-

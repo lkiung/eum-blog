@@ -6,112 +6,24 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../components/FormattedDate.astro';
 
-const posts = (await getCollection('blog')).sort(
+const allPosts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+
+const categories = [
+	{ id: 'Daily Report', label: 'Daily Report', icon: '📋' },
+	{ id: 'Macro', label: 'Macro Analysis', icon: '🌐' },
+	{ id: 'Individual Analysis', label: 'Company Analysis', icon: '🏢' },
+];
+
+// Initial state for the first render (all posts are Daily Report for now)
+const initialCategory = 'Daily Report';
 ---
 
 <!doctype html>
 <html lang="ko">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 3em 1em;
-			}
-			ul {
-				display: flex;
-				flex-direction: column;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				border-bottom: 1px solid var(--border-glass);
-				padding-bottom: 2rem;
-			}
-			ul li:last-child {
-				border-bottom: none;
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			.title {
-				margin: 0 0 0.5rem 0;
-				color: #fff;
-				line-height: 1.2;
-				font-size: 1.8rem;
-				font-family: var(--font-main);
-				font-weight: 700;
-			}
-			.date {
-				margin: 0;
-				color: var(--text-secondary);
-				font-size: 0.9rem;
-			}
-			ul li a:hover .title {
-				color: var(--accent);
-			}
-			.description {
-				margin-top: 0.5rem;
-				color: var(--text-secondary);
-				font-size: 1rem;
-				display: -webkit-box;
-				-webkit-line-clamp: 2;
-				-webkit-box-orient: vertical;
-				overflow: hidden;
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section class="hero">
-				<h1>Eum Village AI</h1>
-				<p class="tagline">지능형 에이전트 기반 기업 분석 및 투자 인사이트</p>
-				<div class="hero-stats">
-					<div class="stat">
-						<span class="label">최근 업데이트</span>
-						<span class="value">Daily</span>
-					</div>
-					<div class="stat">
-						<span class="label">데이터 소스</span>
-						<span class="value">News & Telegram</span>
-					</div>
-				</div>
-			</section>
-
-			<section class="reports-section">
-				<div class="section-header">
-					<h2>최신 분석 리포트</h2>
-					<a href="/market" class="view-all">시장 차트로 보기 →</a>
-				</div>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`} class="report-card">
-									<div class="card-content">
-										<p class="date">
-											<FormattedDate date={post.data.pubDate} />
-										</p>
-										<h3 class="title">{post.data.title}</h3>
-										{post.data.description && <p class="description">{post.data.description}</p>}
-									</div>
-									<div class="card-arrow">→</div>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-
 		<style>
 			main {
 				width: 900px;
@@ -121,66 +33,121 @@ const posts = (await getCollection('blog')).sort(
 			}
 			.hero {
 				text-align: center;
-				margin-bottom: 6rem;
+				padding: 5rem 0;
+				margin-bottom: 2rem;
 				animation: fadeInUp 0.8s ease;
 			}
 			@keyframes fadeInUp {
 				from { opacity: 0; transform: translateY(20px); }
 				to { opacity: 1; transform: translateY(0); }
 			}
-			.hero h1 {
-				font-size: 4rem;
-				font-weight: 800;
-				margin-bottom: 1rem;
-				background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
-				-webkit-background-clip: text;
-				-webkit-text-fill-color: transparent;
-				letter-spacing: -0.03em;
-			}
-			.tagline {
-				font-size: 1.5rem;
-				color: var(--text-secondary);
-				margin-bottom: 3rem;
-			}
-			.hero-stats {
-				display: flex;
-				justify-content: center;
-				gap: 4rem;
-			}
-			.stat {
+			.quote-container {
+				margin: 0 auto;
 				display: flex;
 				flex-direction: column;
 				align-items: center;
+				gap: 2rem;
+				position: relative;
+				padding: 4rem 3rem;
+				background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+				border-radius: 32px;
+				border: 1px solid rgba(255, 255, 255, 0.05);
+				max-width: 850px;
+				box-shadow: 0 30px 60px rgba(0,0,0,0.3);
 			}
-			.stat .label {
-				font-size: 0.9rem;
-				color: #888;
-				text-transform: uppercase;
-				letter-spacing: 0.1em;
-			}
-			.stat .value {
-				font-size: 1.8rem;
-				font-weight: 700;
+			.quote-mark {
+				position: absolute;
+				font-size: 5rem;
+				font-family: 'Times New Roman', serif;
 				color: var(--accent);
+				opacity: 0.1;
+				line-height: 1;
+				user-select: none;
 			}
-
-			.section-header {
+			.quote-mark.open {
+				top: 1.5rem;
+				left: 2rem;
+			}
+			.quote-mark.close {
+				bottom: 1.5rem;
+				right: 2rem;
+				transform: rotate(180deg);
+			}
+			.tagline {
+				font-size: 2rem;
+				font-weight: 700;
+				line-height: 1.4;
+				color: #fff;
+				margin: 0;
+				word-break: keep-all;
+				text-align: center;
+				position: relative;
+				letter-spacing: -0.02em;
+				z-index: 1;
+				text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+			}
+			.author {
+				font-size: 1rem;
+				color: var(--text-secondary);
+				font-weight: 700;
+				letter-spacing: 0.3em;
+				text-transform: uppercase;
+				margin: 0;
 				display: flex;
-				justify-content: space-between;
-				align-items: flex-end;
-				margin-bottom: 2rem;
+				align-items: center;
+				gap: 1.5rem;
+				opacity: 0.8;
+			}
+			.author::before, .author::after {
+				content: '';
+				width: 40px;
+				height: 1px;
+				background: linear-gradient(to right, transparent, var(--accent), transparent);
+				opacity: 0.5;
+			}
+			
+			/* Category Tabs */
+			.category-tabs {
+				display: flex;
+				justify-content: center;
+				gap: 1rem;
+				margin-bottom: 3rem;
 				border-bottom: 1px solid rgba(255,255,255,0.1);
 				padding-bottom: 1rem;
 			}
-			.section-header h2 {
-				margin: 0;
-				font-size: 1.8rem;
-			}
-			.view-all {
-				color: var(--accent);
-				text-decoration: none;
-				font-size: 0.9rem;
+			.tab-button {
+				background: none;
+				border: none;
+				color: var(--text-secondary);
+				font-size: 1.1rem;
 				font-weight: 600;
+				padding: 0.8rem 1.5rem;
+				cursor: pointer;
+				transition: all 0.3s ease;
+				border-radius: 8px;
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+			}
+			.tab-button:hover {
+				background: rgba(255,255,255,0.05);
+				color: #fff;
+			}
+			.tab-button.active {
+				color: var(--accent);
+				background: rgba(var(--accent-rgb), 0.1);
+			}
+
+			.reports-grid {
+				display: none;
+				animation: fadeIn 0.5s ease;
+			}
+			.reports-grid.active {
+				display: block;
+			}
+			@keyframes fadeIn {
+				from { opacity: 0; }
+				to { opacity: 1; }
 			}
 
 			ul {
@@ -237,7 +204,96 @@ const posts = (await getCollection('blog')).sort(
 				transition: all 0.3s ease;
 				margin-left: 2rem;
 			}
+
+			.empty-state {
+				text-align: center;
+				padding: 4rem 2rem;
+				color: var(--text-secondary);
+				background: rgba(255,255,255,0.02);
+				border-radius: 12px;
+				border: 1px dashed rgba(255,255,255,0.1);
+			}
 		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div class="quote-container">
+					<span class="quote-mark open">“</span>
+					<p class="tagline">직관적인 투자자가 AI를 보조 도구로 활용한다면<br/>그 조합이 세계 최고의 투자자일 것이다.</p>
+					<p class="author">Stanley Druckenmiller</p>
+					<span class="quote-mark close">“</span>
+				</div>
+			</section>
+
+			<nav class="category-tabs" aria-label="Blog categories">
+				{categories.map((cat) => (
+					<button 
+						class={`tab-button ${cat.id === initialCategory ? 'active' : ''}`}
+						data-category={cat.id}
+					>
+						<span class="icon">{cat.icon}</span>
+						{cat.label}
+					</button>
+				))}
+			</nav>
+
+			<section class="content-area">
+				{categories.map((cat) => (
+					<div 
+						id={`category-${cat.id}`} 
+						class={`reports-grid ${cat.id === initialCategory ? 'active' : ''}`}
+					>
+						{allPosts.filter(p => p.data.category === cat.id).length > 0 ? (
+							<ul>
+								{allPosts.filter(p => p.data.category === cat.id).map((post) => (
+									<li>
+										<a href={`/blog/${post.id}/`} class="report-card">
+											<div class="card-content">
+												<p class="date">
+													<FormattedDate date={post.data.pubDate} />
+												</p>
+												<h3 class="title">{post.data.title}</h3>
+												{post.data.description && <p class="description">{post.data.description}</p>}
+											</div>
+											<div class="card-arrow">→</div>
+										</a>
+									</li>
+								))}
+							</ul>
+						) : (
+							<div class="empty-state">
+								<p>준비 중인 카테고리입니다. 곧 새로운 인사이트로 찾아뵙겠습니다.</p>
+							</div>
+						)}
+					</div>
+				))}
+			</section>
+		</main>
+
+		<script>
+			const tabButtons = document.querySelectorAll('.tab-button');
+			const grids = document.querySelectorAll('.reports-grid');
+
+			tabButtons.forEach(button => {
+				button.addEventListener('click', () => {
+					const category = button.getAttribute('data-category');
+
+					// Update buttons
+					tabButtons.forEach(btn => btn.classList.remove('active'));
+					button.classList.add('active');
+
+					// Update grids
+					grids.forEach(grid => {
+						grid.classList.remove('active');
+						if (grid.id === `category-${category}`) {
+							grid.classList.add('active');
+						}
+					});
+				});
+			});
+		</script>
 		<Footer />
 	</body>
 </html>

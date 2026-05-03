@@ -1,14 +1,10 @@
----
+--- 
 title: "[2026-04-29] 호르무즈 위기는 어떻게 전개되고 있는가: 100달러 이상 유가가 글로벌 경제를 재편성함에 따라 에너지 시장은 장기적 차질에 대비하다"
 description: "Latest corporate analysis data and market insights."
 pubDate: "2026-04-29"
 heroImage: "../../assets/hero.png"
+category: "Daily Report"
 ---
----
-title: Daily AI Market Intelligence
-date: 2026-04-29
----
-
 # 호르무즈 위기는 어떻게 전개되고 있는가: 100달러 이상 유가가 글로벌 경제를 재편성함에 따라 에너지 시장은 장기적 차질에 대비하다
 ______________________________________________________________________
 
@@ -427,6 +423,3 @@ ______________________________________________________________________
 
 보고서 종료
 *Eum-Vilage AI Infrastructure로 생성*
-
-
-
