@@ -3,7 +3,7 @@ title: "[2026-05-04] 거시 인텔리전스 브리프: 전략적 자산 배분"
 description: "Latest corporate analysis data and market insights."
 pubDate: "2026-05-04"
 heroImage: "../../assets/hero.png"
-category: "Daily Report"
+category: "Macro"
 ---
 # 거시 인텔리전스 브리프: 전략적 자산 배분
 
