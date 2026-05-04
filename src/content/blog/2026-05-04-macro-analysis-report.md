@@ -57,12 +57,12 @@ category: "Macro"
 - 약세 논리 내 분배 서사, 핵심 이동평균선 이상의 구조적 무결성으로 반박
 
 
-![CHART_1](/charts/gallery_ixic.png)
+![CHART_1](/charts/2026-05-04/macro/gallery_ixic.png)
 
 *<small>▲ CHART_1: NASDAQ Composite at 25,114 trading 11.2% above 200-day EMA (22,370) with Z-score 0.77 confirming normal trend behavior. Multi-EMA stacking (EMA 20 > EMA 60 > EMA 120 > EMA 200) demonstrates positive short-term momentum alignment. Visual evidence needed to support Bull case that current positioning represents healthy uptrend, not overbought capitulation.</small>*
 
 
-![CHART_2](/charts/gallery_gspc.png)
+![CHART_2](/charts/2026-05-04/macro/gallery_gspc.png)
 
 *<small>▲ CHART_2: S&P 500 at 7,230 trading 8.5% above 200-day EMA (6,665) with Z-score 0.33 indicating normal trend behavior. Corroborates NASDAQ technical picture and validates Long-Term Trend Alignment intact. Contrasts with Bear distribution phase narrative.</small>*
 
@@ -80,12 +80,12 @@ category: "Macro"
 - 현재 4.57% YoY 성장, 하방 기울기에도 불구하고 확대 영역 상존
 
 
-![CHART_3](/charts/gallery_m2sl.png)
+![CHART_3](/charts/2026-05-04/macro/gallery_m2sl.png)
 
 *<small>▲ CHART_3: M2 Money Supply YoY change at 4.57% with -0.12 slope demonstrates decelerating expansion, NOT monetary contraction. Critical chart for disproving Bear argument that M2 contraction structurally impairs equities. Highlight that -0.12 slope represents growth moderation while absolute YoY at 4.57% remains positive - threshold for bullish impairment (negative YoY growth) not breached.</small>*
 
 
-![CHART_7](/charts/gallery_fedfunds.png)
+![CHART_7](/charts/2026-05-04/macro/gallery_fedfunds.png)
 
 *<small>▲ CHART_7: Federal Funds Rate trajectory establishing monetary policy backdrop for equity valuations and M2 dynamics interpretation. Provides context for interest rate sensitivity analysis across sector allocations.</small>*
 
@@ -104,7 +104,7 @@ category: "Macro"
 - MediaTek 궤적 ($19B-$48B), 한국 장비 평가 및 패키징 서비스 포지셔닝 뒷받침
 
 
-![CHART_4](/charts/gallery_mitk.png)
+![CHART_4](/charts/2026-05-04/macro/gallery_mitk.png)
 
 *<small>▲ CHART_4: MediaTek trajectory ($19B-$48B) validating Korean semiconductor equipment valuations and AI packaging service positioning. Show earnings revision momentum and institutional order flow implications. Supports High conviction overweight allocation.</small>*
 
@@ -122,7 +122,7 @@ category: "Macro"
 - 원유 $110 저항 수준, 주식 포지션 **손절mtg자**로 활용
 
 
-![CHART_5](/charts/gallery_clf.png)
+![CHART_5](/charts/2026-05-04/macro/gallery_clf.png)
 
 *<small>▲ CHART_5: Crude oil front-month futures with $110 resistance level as stop-loss trigger for equity positions. Monday Hormuz catalyst creates tail-risk scenario - chart needed to visualize geopolitical risk overlay on constructive positioning. Show historical volatility regime and current price proximity to trigger levels.</small>*
 
@@ -140,7 +140,7 @@ category: "Macro"
 - 중국 자본 로테이션 카탈리스트 **미실현**; 3-6개월 불확실한 시계, 단기 강세 논지 제한
 
 
-![CHART_6](/charts/gallery_xly.png)
+![CHART_6](/charts/2026-05-04/macro/gallery_xly.png)
 
 *<small>▲ CHART_6: Consumer Discretionary sector ETF (proxy for German/EU automotive exporters exposure) showing distribution phase characteristics. Supports High conviction underweight with short positioning via ETF. Demonstrate relative weakness versus defensive sectors.</small>*
 

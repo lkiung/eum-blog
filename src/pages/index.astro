@@ -10,6 +10,10 @@ const allPosts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
+import MacroGauge from '../components/MacroGauge.astro';
+import currentStance from '../../public/data/current_macro_stance.json';
+
+
 const categories = [
 	{ id: 'Daily Report', label: 'Daily Report', icon: '📋' },
 	{ id: 'Macro', label: 'Macro Analysis', icon: '🌐' },
@@ -245,6 +249,7 @@ const initialCategory = 'Daily Report';
 						id={`category-${cat.id}`} 
 						class={`reports-grid ${cat.id === initialCategory ? 'active' : ''}`}
 					>
+						{cat.id === 'Macro' && <MacroGauge stance={currentStance} />}
 						{allPosts.filter(p => p.data.category === cat.id).length > 0 ? (
 							<ul>
 								{allPosts.filter(p => p.data.category === cat.id).map((post) => (

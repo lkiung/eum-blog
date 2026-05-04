@@ -1,0 +1,220 @@
+---
+interface Props {
+	stance: {
+		level: number;
+		characterization: string;
+		conviction_score: number;
+		confidence_level: string | number;
+		settlement_date: string;
+	};
+}
+
+const { stance } = Astro.props;
+
+// Calculate rotation for the needle
+// Level 1 to 6 mapped to -90deg to +90deg (180 degrees total)
+// level 1: -90, level 2: -54, level 3: -18, level 4: 18, level 5: 54, level 6: 90
+const rotation = (stance.level - 1) * 36 - 90;
+
+// Color based on level
+const getLevelColor = (level: number) => {
+	const colors = [
+		'#ff4d4d', // 1: Panic
+		'#ffa64d', // 2: Caution
+		'#ffff4d', // 3: Hold
+		'#a6ff4d', // 4: Accumulate
+		'#4dff4d', // 5: Aggressive
+		'#00cc00'  // 6: All-in
+	];
+	return colors[level - 1] || '#94a3b8';
+};
+
+const activeColor = getLevelColor(stance.level);
+---
+
+<div class="gauge-container">
+	<div class="gauge-card">
+		<div class="gauge-header">
+			<h3>Eum Village Macro Stance</h3>
+			<span class="date">Updated: {stance.settlement_date}</span>
+		</div>
+		
+		<div class="gauge-body">
+			<div class="gauge-visual">
+				<svg viewBox="0 0 200 120" class="gauge-svg">
+					<!-- Background Track -->
+					<path 
+						d="M20 100 A80 80 0 0 1 180 100" 
+						fill="none" 
+						stroke="rgba(255,255,255,0.05)" 
+						stroke-width="12" 
+						stroke-linecap="round"
+					/>
+					
+					<!-- Segmented Colored Track (Visual Only) -->
+					<path d="M20 100 A80 80 0 0 1 46.6 50" fill="none" stroke="#ff4d4d" stroke-width="12" opacity="0.3" />
+					<path d="M46.6 50 A80 80 0 0 1 80 25" fill="none" stroke="#ffa64d" stroke-width="12" opacity="0.3" />
+					<path d="M80 25 A80 80 0 0 1 120 25" fill="none" stroke="#ffff4d" stroke-width="12" opacity="0.3" />
+					<path d="M120 25 A80 80 0 0 1 153.4 50" fill="none" stroke="#a6ff4d" stroke-width="12" opacity="0.3" />
+					<path d="M153.4 50 A80 80 0 0 1 180 100" fill="none" stroke="#4dff4d" stroke-width="12" opacity="0.3" />
+
+					<!-- Active Needle -->
+					<g class="needle" style={`transform: rotate(${rotation}deg); transform-origin: 100px 100px; transition: transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);`}>
+						<line x1="100" y1="100" x2="100" y2="30" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+						<circle cx="100" cy="100" r="6" fill="#fff" />
+						<circle cx="100" cy="100" r="3" fill={activeColor} />
+					</g>
+				</svg>
+				
+				<div class="level-display">
+					<span class="level-num" style={`color: ${activeColor}`}>{stance.level}</span>
+					<span class="level-label">Level</span>
+				</div>
+			</div>
+
+			<div class="info-panel">
+				<div class="status-badge" style={`background: ${activeColor}20; border: 1px solid ${activeColor}50; color: ${activeColor}`}>
+					{stance.characterization}
+				</div>
+				
+				<div class="conviction-meter">
+					<div class="meter-label">
+						<span>Conviction Score</span>
+						<span class="score-val">{stance.conviction_score}/10</span>
+					</div>
+					<div class="meter-track">
+						<div class="meter-fill" style={`width: ${stance.conviction_score * 10}%; background: linear-gradient(90deg, ${activeColor}, #fff);`}></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	.gauge-container {
+		margin-bottom: 4rem;
+		perspective: 1000px;
+	}
+	.gauge-card {
+		background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 24px;
+		padding: 2.5rem;
+		backdrop-filter: blur(12px);
+		box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+		transition: transform 0.5s ease;
+	}
+	.gauge-card:hover {
+		transform: translateY(-5px) rotateX(2deg);
+	}
+	.gauge-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 2rem;
+		border-bottom: 1px solid rgba(255,255,255,0.05);
+		padding-bottom: 1rem;
+	}
+	.gauge-header h3 {
+		margin: 0;
+		font-size: 1.2rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-secondary);
+	}
+	.date {
+		font-size: 0.85rem;
+		color: rgba(255,255,255,0.3);
+		font-family: monospace;
+	}
+	.gauge-body {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 3rem;
+		align-items: center;
+	}
+	@media (max-width: 768px) {
+		.gauge-body {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+		}
+	}
+	.gauge-visual {
+		position: relative;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	.gauge-svg {
+		width: 100%;
+		max-width: 280px;
+		filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+	}
+	.level-display {
+		position: absolute;
+		bottom: 10%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.level-num {
+		font-size: 3.5rem;
+		font-weight: 800;
+		line-height: 1;
+		text-shadow: 0 0 20px currentColor;
+	}
+	.level-label {
+		font-size: 0.8rem;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: var(--text-secondary);
+		margin-top: 0.5rem;
+	}
+	.info-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+	.status-badge {
+		padding: 1rem 1.5rem;
+		border-radius: 12px;
+		font-size: 1.1rem;
+		font-weight: 700;
+		text-align: center;
+		box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+		animation: pulse 2s infinite ease-in-out;
+	}
+	@keyframes pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.8; }
+	}
+	.conviction-meter {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+	}
+	.meter-label {
+		display: flex;
+		justify-content: space-between;
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+		font-weight: 600;
+	}
+	.score-val {
+		color: #fff;
+	}
+	.meter-track {
+		height: 8px;
+		background: rgba(255,255,255,0.05);
+		border-radius: 4px;
+		overflow: hidden;
+		border: 1px solid rgba(255,255,255,0.05);
+	}
+	.meter-fill {
+		height: 100%;
+		border-radius: 4px;
+		transition: width 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+		box-shadow: 0 0 15px rgba(0,255,204,0.3);
+	}
+</style>
