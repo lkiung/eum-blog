@@ -140,6 +140,37 @@ const activeColor = getLevelColor(stance.level);
 			gap: 2rem;
 		}
 	}
+	@media (max-width: 720px) {
+		.gauge-card {
+			padding: 1.5rem 1.2rem;
+			border-radius: 16px;
+		}
+		.gauge-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.4rem;
+			margin-bottom: 1.5rem;
+		}
+		.gauge-header h3 {
+			font-size: 0.95rem;
+		}
+		.date {
+			font-size: 0.78rem;
+		}
+		.gauge-svg {
+			max-width: 200px;
+		}
+		.level-num {
+			font-size: 2.5rem;
+		}
+		.status-badge {
+			font-size: 0.95rem;
+			padding: 0.7rem 1rem;
+		}
+		.meter-label {
+			font-size: 0.8rem;
+		}
+	}
 	.gauge-visual {
 		position: relative;
 		display: flex;

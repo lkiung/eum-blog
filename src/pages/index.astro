@@ -15,9 +15,9 @@ import currentStance from '../../public/data/current_macro_stance.json';
 
 
 const categories = [
-	{ id: 'Daily Report', label: 'Daily Report', icon: '📋' },
-	{ id: 'Macro', label: 'Macro Analysis', icon: '🌐' },
-	{ id: 'Individual Analysis', label: 'Company Analysis', icon: '🏢' },
+	{ id: 'Daily Report', label: 'Daily Report', shortLabel: 'Daily', icon: '📋' },
+	{ id: 'Macro', label: 'Macro Analysis', shortLabel: 'Macro', icon: '🌐' },
+	{ id: 'Individual Analysis', label: 'Company Analysis', shortLabel: 'Company', icon: '🏢' },
 ];
 
 // Initial state for the first render (all posts are Daily Report for now)
@@ -217,6 +217,76 @@ const initialCategory = 'Daily Report';
 				border-radius: 12px;
 				border: 1px dashed rgba(255,255,255,0.1);
 			}
+			.tab-label-short {
+				display: none;
+			}
+
+			@media (max-width: 720px) {
+				main {
+					padding: 1.5em 1em;
+				}
+				.hero {
+					padding: 2rem 0;
+				}
+				.quote-container {
+					padding: 2rem 1.2rem;
+					border-radius: 20px;
+					gap: 1.5rem;
+				}
+				.tagline {
+					font-size: 1.3rem;
+					line-height: 1.5;
+				}
+				.quote-mark {
+					font-size: 3rem;
+				}
+				.quote-mark.open {
+					top: 0.8rem;
+					left: 1rem;
+				}
+				.quote-mark.close {
+					bottom: 0.8rem;
+					right: 1rem;
+				}
+				.category-tabs {
+					gap: 0.5rem;
+				}
+				.tab-button {
+					font-size: 0.85rem;
+					padding: 0.6rem 0.9rem;
+					flex: 1;
+					justify-content: center;
+					gap: 0.3rem;
+				}
+				.icon {
+					display: none;
+				}
+				.tab-label-full {
+					display: none;
+				}
+				.tab-label-short {
+					display: inline;
+				}
+				.report-card {
+					padding: 1.2rem 0;
+				}
+				.report-card:hover {
+					padding-left: 0;
+				}
+				.report-card:active {
+					background: rgba(255,255,255,0.04);
+				}
+				.title {
+					font-size: 1.05rem;
+				}
+				.description {
+					font-size: 0.88rem;
+				}
+				.card-arrow {
+					margin-left: 0.8rem;
+					font-size: 1.1rem;
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -233,12 +303,13 @@ const initialCategory = 'Daily Report';
 
 			<nav class="category-tabs" aria-label="Blog categories">
 				{categories.map((cat) => (
-					<button 
+					<button
 						class={`tab-button ${cat.id === initialCategory ? 'active' : ''}`}
 						data-category={cat.id}
 					>
 						<span class="icon">{cat.icon}</span>
-						{cat.label}
+						<span class="tab-label-full">{cat.label}</span>
+						<span class="tab-label-short">{cat.shortLabel}</span>
 					</button>
 				))}
 			</nav>

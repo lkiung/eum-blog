@@ -56,6 +56,36 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 				margin-bottom: 2rem;
 				box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 			}
+			.chart-controls {
+				display: flex;
+				justify-content: flex-end;
+				align-items: center;
+				margin-bottom: 14px;
+			}
+			.symbol-dropdown {
+				background: rgba(255, 255, 255, 0.07);
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				color: #d1d4dc;
+				padding: 7px 36px 7px 14px;
+				border-radius: 8px;
+				font-size: 0.9rem;
+				cursor: pointer;
+				outline: none;
+				transition: border-color 0.2s;
+				appearance: none;
+				-webkit-appearance: none;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+				background-repeat: no-repeat;
+				background-position: right 12px center;
+			}
+			.symbol-dropdown:hover,
+			.symbol-dropdown:focus {
+				border-color: var(--accent);
+			}
+			.symbol-dropdown option {
+				background: #0f1219;
+				color: #d1d4dc;
+			}
 			#chart-container {
 				height: 600px;
 				width: 100%;
@@ -103,31 +133,129 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 				from { opacity: 0; transform: translateY(10px); }
 				to { opacity: 1; transform: translateY(0); }
 			}
-			.spotlight-content h3 {
-				color: var(--accent);
-				margin-bottom: 1rem;
+			.spotlight-date {
+				color: #888;
+				font-size: 0.9rem;
+				margin-bottom: 1.2rem;
 			}
-			.spotlight-content a {
+			.spotlight-cards {
+				display: flex;
+				flex-direction: column;
+				gap: 1.2rem;
+			}
+			.spotlight-card {
+				padding: 1.4rem 1.6rem;
+				background: rgba(255, 255, 255, 0.04);
+				border: 1px solid rgba(255, 255, 255, 0.08);
+				border-radius: 14px;
+			}
+			.spotlight-card h3 {
+				color: var(--accent);
+				margin: 0 0 0.6rem 0;
+				font-size: 1.1rem;
+			}
+			.spotlight-card p {
+				margin: 0 0 1rem 0;
+				color: #ccc;
+				font-size: 0.95rem;
+				line-height: 1.55;
+			}
+			.spotlight-card a {
 				display: inline-block;
-				margin-top: 1rem;
-				padding: 0.8rem 1.5rem;
+				padding: 0.6rem 1.3rem;
 				background: var(--accent);
 				color: #000;
 				text-decoration: none;
 				border-radius: 30px;
 				font-weight: 600;
+				font-size: 0.9rem;
 				transition: transform 0.2s ease;
 			}
-			.spotlight-content a:hover {
+			.spotlight-card a:hover {
 				transform: scale(1.05);
+			}
+			.preview-count {
+				display: inline-block;
+				margin-top: 6px;
+				font-size: 0.8rem;
+				color: var(--accent);
+				opacity: 0.85;
+			}
+
+			/* ── Mobile report list (desktop: hidden) ── */
+			.mobile-report-list {
+				display: none;
 			}
 
 			@media (max-width: 768px) {
+				.market-header h1 { font-size: 1.8rem; }
+				.market-header p  { font-size: 0.9rem; }
+
+				.chart-container-wrapper { padding: 14px; border-radius: 16px; }
+
 				#chart-container {
-					height: 350px;
+					height: 400px;
 				}
 				.news-preview-card {
-					display: none !important; /* Always use spotlight on mobile */
+					display: none !important;
+				}
+
+				/* spotlight (tap result) on mobile */
+				.spotlight-section { padding: 1.2rem; }
+				.spotlight-card { padding: 1rem 1.1rem; }
+				.spotlight-card h3 { font-size: 1rem; }
+
+				/* mobile report list */
+				.mobile-report-list {
+					display: block;
+					margin-top: 1.8rem;
+				}
+				.mobile-report-list-heading {
+					font-size: 1rem;
+					font-weight: 700;
+					color: #aaa;
+					letter-spacing: 0.06em;
+					text-transform: uppercase;
+					margin-bottom: 1rem;
+				}
+				.mobile-date-group {
+					margin-bottom: 1.4rem;
+				}
+				.mobile-date-label {
+					font-size: 0.78rem;
+					color: #666;
+					letter-spacing: 0.05em;
+					margin-bottom: 0.45rem;
+					padding-left: 2px;
+				}
+				.mobile-report-card {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					gap: 0.8rem;
+					padding: 0.85rem 1rem;
+					margin-bottom: 0.5rem;
+					background: rgba(255,255,255,0.04);
+					border: 1px solid rgba(255,255,255,0.07);
+					border-radius: 12px;
+					text-decoration: none;
+					color: #d1d4dc;
+					transition: background 0.15s, border-color 0.15s;
+					-webkit-tap-highlight-color: transparent;
+				}
+				.mobile-report-card:active {
+					background: rgba(255,255,255,0.08);
+					border-color: var(--accent);
+				}
+				.mobile-report-title {
+					font-size: 0.88rem;
+					line-height: 1.4;
+					flex: 1;
+				}
+				.mobile-report-arrow {
+					font-size: 1rem;
+					color: var(--accent);
+					flex-shrink: 0;
 				}
 			}
 		</style>
@@ -137,10 +265,18 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 		<main>
 			<section class="market-header">
 				<h1>Market Insights</h1>
-				<p>나스닥 시장 변동과 AI 리포트의 상관관계를 확인하세요.</p>
+				<p>시장 변동과 AI 리포트의 상관관계를 확인하세요.</p>
 			</section>
 
 			<div class="chart-container-wrapper">
+				<div class="chart-controls">
+					<select id="symbol-select" class="symbol-dropdown">
+						<option value="nasdaq">NASDAQ</option>
+						<option value="sp500">S&P 500</option>
+						<option value="kospi">KOSPI</option>
+						<option value="kosdaq">KOSDAQ</option>
+					</select>
+				</div>
 				<div id="chart-container" data-posts={postsBase64}></div>
 				<div id="news-preview" class="news-preview-card">
 					<h4 id="preview-title"></h4>
@@ -149,58 +285,62 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 			</div>
 
 			<div id="spotlight" class="spotlight-section">
-				<div class="spotlight-content">
-					<p class="date" id="spotlight-date" style="color: #888; font-size: 0.9rem;"></p>
-					<h3 id="spotlight-title"></h3>
-					<p id="spotlight-desc"></p>
-					<a id="spotlight-link" href="#">전체 리포트 읽기</a>
-				</div>
+				<p id="spotlight-date" class="spotlight-date"></p>
+				<div id="spotlight-cards" class="spotlight-cards"></div>
 			</div>
+
+			<!-- Mobile-only: always-visible report list -->
+			<section class="mobile-report-list">
+				<p class="mobile-report-list-heading">리포트 목록</p>
+				<div id="mobile-reports"></div>
+			</section>
 		</main>
 		<Footer />
 
 		<script is:inline>
-			console.log('Market Insight Script Loaded');
+			const SYMBOL_CONFIG = {
+				nasdaq: { label: 'NASDAQ', dataFile: '/data/nasdaq.json', macroFile: '/data/nasdaq_macro.json' },
+				sp500:  { label: 'S&P 500', dataFile: '/data/sp500.json',  macroFile: '/data/sp500_macro.json'  },
+				kospi:  { label: 'KOSPI',   dataFile: '/data/kospi.json',  macroFile: '/data/kospi_macro.json'  },
+				kosdaq: { label: 'KOSDAQ',  dataFile: '/data/kosdaq.json', macroFile: '/data/kosdaq_macro.json' },
+			};
+
 			let chartInstance = null;
 			let isInitializing = false;
 
 			function checkAndInit() {
 				if (typeof LightweightCharts === 'undefined') {
-					console.log('Waiting for LightweightCharts library...');
 					setTimeout(checkAndInit, 100);
 					return;
 				}
-				if (!isInitializing) {
-					initChart();
-				}
+				initChart('nasdaq');
 			}
 
-			async function initChart() {
+			async function initChart(symbolKey) {
 				const container = document.getElementById('chart-container');
 				if (!container || isInitializing) return;
-				
+
 				isInitializing = true;
+				const isMobile = window.innerWidth < 768;
+
 				try {
+					const config = SYMBOL_CONFIG[symbolKey];
 					const postsData = container.getAttribute('data-posts');
-					// UTF-8 safe Base64 decode
 					const posts = JSON.parse(decodeURIComponent(escape(atob(postsData))));
-					console.log('Posts data parsed (Base64 UTF-8):', posts.length, posts);
-					
+
 					if (chartInstance) {
 						chartInstance.remove();
 						chartInstance = null;
 					}
 					container.innerHTML = '';
-					
-					console.log('Fetching NASDAQ data...');
-					const response = await fetch('/data/nasdaq.json');
-					if (!response.ok) throw new Error('Data fetch failed');
+
+					const response = await fetch(config.dataFile);
+					if (!response.ok) throw new Error(`Failed to load ${config.dataFile}`);
 					const data = await response.json();
-					console.log('Market data loaded:', data.length);
 
 					const chart = LightweightCharts.createChart(container, {
 						width: container.clientWidth,
-						height: 600,
+						height: isMobile ? 400 : 600,
 						layout: {
 							background: { type: 'solid', color: 'transparent' },
 							textColor: '#d1d4dc',
@@ -209,13 +349,13 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 							vertLines: { color: 'rgba(42, 46, 57, 0.3)' },
 							horzLines: { color: 'rgba(42, 46, 57, 0.3)' },
 						},
-						rightPriceScale: { 
-							borderColor: 'rgba(197, 203, 206, 0.8)', 
+						rightPriceScale: {
+							borderColor: 'rgba(197, 203, 206, 0.8)',
 							autoScale: true,
-							mode: 1, // Logarithmic
+							mode: 1,
 						},
-						timeScale: { 
-							borderColor: 'rgba(197, 203, 206, 0.8)', 
+						timeScale: {
+							borderColor: 'rgba(197, 203, 206, 0.8)',
 							timeVisible: true,
 						},
 					});
@@ -228,161 +368,162 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 						wickUpColor: '#26a69a',
 						wickDownColor: '#ef5350',
 					});
-					window.candleSeries = candleSeries; // For debugging
-
 					candleSeries.setData(data);
 
-					console.log('Fetching Macro data...');
-					const macroResponse = await fetch('/data/nasdaq_macro.json');
-					const macroData = await macroResponse.json();
-					console.log('Macro data loaded:', macroData.length);
+					// --- Macro Z-score bands ---
+					let macroData = [];
+					try {
+						const macroResponse = await fetch(config.macroFile);
+						if (macroResponse.ok) macroData = await macroResponse.json();
+					} catch (_) {}
 
-					const trendSeries = chart.addLineSeries({
-						color: '#ff9800',
-						lineWidth: 2,
-						lineStyle: 2, // Dashed
-						title: 'Robust Trend',
-						priceLineVisible: false,
-						lastValueVisible: false,
-					});
+					if (macroData.length > 0) {
+						chart.addLineSeries({
+							color: '#ff9800', lineWidth: 2, lineStyle: 2,
+							title: 'Trend', priceLineVisible: false, lastValueVisible: false,
+						}).setData(macroData.map(d => ({ time: d.time, value: d.trend })));
 
-					const upperSeries = chart.addLineSeries({
-						color: 'rgba(239, 83, 80, 0.5)',
-						lineWidth: 1,
-						lineStyle: 3, // Dotted
-						title: 'Upper Bound (Z=2)',
-						priceLineVisible: false,
-						lastValueVisible: false,
-					});
+						// Z=2 / Z=-2 (항상 표시)
+						chart.addLineSeries({
+							color: 'rgba(239, 83, 80, 0.7)', lineWidth: 1, lineStyle: 3,
+							title: 'Z=2', priceLineVisible: false, lastValueVisible: false,
+						}).setData(macroData.map(d => ({ time: d.time, value: d.upper })));
+						chart.addLineSeries({
+							color: 'rgba(38, 166, 154, 0.7)', lineWidth: 1, lineStyle: 3,
+							title: 'Z=-2', priceLineVisible: false, lastValueVisible: false,
+						}).setData(macroData.map(d => ({ time: d.time, value: d.lower })));
 
-					const lowerSeries = chart.addLineSeries({
-						color: 'rgba(38, 166, 154, 0.5)',
-						lineWidth: 1,
-						lineStyle: 3, // Dotted
-						title: 'Lower Bound (Z=-2)',
-						priceLineVisible: false,
-						lastValueVisible: false,
-					});
+						// Z=1 / Z=-1 (항상 표시)
+						const m1 = macroData.filter(d => d.upper1 != null);
+						chart.addLineSeries({
+							color: 'rgba(239, 83, 80, 0.4)', lineWidth: 1, lineStyle: 3,
+							title: 'Z=1', priceLineVisible: false, lastValueVisible: false,
+						}).setData(m1.map(d => ({ time: d.time, value: d.upper1 })));
+						chart.addLineSeries({
+							color: 'rgba(38, 166, 154, 0.4)', lineWidth: 1, lineStyle: 3,
+							title: 'Z=-1', priceLineVisible: false, lastValueVisible: false,
+						}).setData(m1.map(d => ({ time: d.time, value: d.lower1 })));
 
-					const trendData = macroData.map(d => ({ time: d.time, value: d.trend }));
-					const upperData = macroData.map(d => ({ time: d.time, value: d.upper }));
-					const lowerData = macroData.map(d => ({ time: d.time, value: d.lower }));
-					
-					trendSeries.setData(trendData);
-					upperSeries.setData(upperData);
-					lowerSeries.setData(lowerData);
-
-					// EMA Series
-					const ema5Series = chart.addLineSeries({ color: '#ffffff', lineWidth: 1, title: 'EMA 5', priceLineVisible: false, lastValueVisible: false });
-					const ema20Series = chart.addLineSeries({ color: '#ffeb3b', lineWidth: 1, title: 'EMA 20', priceLineVisible: false, lastValueVisible: false });
-					const ema60Series = chart.addLineSeries({ color: '#4caf50', lineWidth: 1, title: 'EMA 60', priceLineVisible: false, lastValueVisible: false });
-					const ema120Series = chart.addLineSeries({ color: '#2196f3', lineWidth: 1, title: 'EMA 120', priceLineVisible: false, lastValueVisible: false });
-					const ema200Series = chart.addLineSeries({ color: '#9c27b0', lineWidth: 1, title: 'EMA 200', priceLineVisible: false, lastValueVisible: false });
-
-					ema5Series.setData(data.map(d => ({ time: d.time, value: d.ema5 })));
-					ema20Series.setData(data.map(d => ({ time: d.time, value: d.ema20 })));
-					ema60Series.setData(data.map(d => ({ time: d.time, value: d.ema60 })));
-					ema120Series.setData(data.map(d => ({ time: d.time, value: d.ema120 })));
-					ema200Series.setData(data.map(d => ({ time: d.time, value: d.ema200 })));
-					
-					// DEBUG: Log types and values
-					if (data.length > 0 && posts.length > 0) {
-						console.log('DEBUG MATCHING:');
-						console.log('Candle[last].time:', data[data.length-1].time, typeof data[data.length-1].time);
-						console.log('Post[0].pubDate:', posts[0].pubDate, typeof posts[0].pubDate);
+						// Z=0.5 / Z=-0.5 (데스크탑만)
+						if (!isMobile) {
+							const m05 = macroData.filter(d => d.upper05 != null);
+							chart.addLineSeries({
+								color: 'rgba(239, 83, 80, 0.2)', lineWidth: 1, lineStyle: 3,
+								title: 'Z=0.5', priceLineVisible: false, lastValueVisible: false,
+							}).setData(m05.map(d => ({ time: d.time, value: d.upper05 })));
+							chart.addLineSeries({
+								color: 'rgba(38, 166, 154, 0.2)', lineWidth: 1, lineStyle: 3,
+								title: 'Z=-0.5', priceLineVisible: false, lastValueVisible: false,
+							}).setData(m05.map(d => ({ time: d.time, value: d.lower05 })));
+						}
 					}
 
-					// Markers with compatible v3.8.0 shapes
-					if (posts && posts.length > 0) {
-						// Helper to convert YYYY-MM-DD to {year, month, day}
-						const toBusinessDay = (dateStr) => {
-							const [y, m, d] = dateStr.split('-').map(Number);
-							return { year: y, month: m, day: d };
-						};
+					// --- EMA lines ---
+					// 모바일: 20d / 60d / 200d  |  데스크탑: 5d / 20d / 60d / 120d / 200d
+					const emas = isMobile
+						? [
+							{ key: 'ema20',  color: '#ffeb3b', title: '20d'  },
+							{ key: 'ema60',  color: '#4caf50', title: '60d'  },
+							{ key: 'ema200', color: '#9c27b0', title: '200d' },
+						  ]
+						: [
+							{ key: 'ema5',   color: '#ffffff', title: '5d'   },
+							{ key: 'ema20',  color: '#ffeb3b', title: '20d'  },
+							{ key: 'ema60',  color: '#4caf50', title: '60d'  },
+							{ key: 'ema120', color: '#2196f3', title: '120d' },
+							{ key: 'ema200', color: '#9c27b0', title: '200d' },
+						  ];
+					emas.forEach(({ key, color, title }) => {
+						chart.addLineSeries({ color, lineWidth: 1, title, priceLineVisible: false, lastValueVisible: false })
+							.setData(data.map(d => ({ time: d.time, value: d[key] })));
+					});
 
-						// Helper to convert {year, month, day} to YYYY-MM-DD
-						const toString = (bd) => `${bd.year}-${String(bd.month).padStart(2, '0')}-${String(bd.day).padStart(2, '0')}`;
-
-						const candleTimesStr = data.map(d => typeof d.time === 'string' ? d.time : toString(d.time));
-						
-						const markers = posts.map(post => {
-							let bestTimeStr = post.pubDate;
-							if (!candleTimesStr.includes(bestTimeStr)) {
-								const pastTimes = candleTimesStr.filter(t => t <= bestTimeStr);
-								bestTimeStr = pastTimes.length > 0 ? pastTimes[pastTimes.length - 1] : null;
-							}
-							
-							if (bestTimeStr) {
-								return {
-									time: toBusinessDay(bestTimeStr),
-									position: 'aboveBar',
-									color: '#e91e63', 
-									shape: 'pin',
-									size: 1.5,
-									text: 'REPORT',
-								};
-							}
-							return null;
-						}).filter(m => m !== null);
-						
-						console.log('Setting markers:', markers.length, markers);
-						candleSeries.setMarkers(markers);
-					}
-
-					// Zoom to last 2 weeks
+					// --- Zoom to ~4 months (~85 trading days) ---
 					if (data.length > 10) {
 						const lastIndex = data.length - 1;
-						const startIndex = Math.max(0, lastIndex - 12);
 						chart.timeScale().setVisibleRange({
-							from: data[startIndex].time,
-							to: data[lastIndex].time,
+							from: data[Math.max(0, lastIndex - 85)].time,
+							to:   data[lastIndex].time,
 						});
 					}
 
 					window.addEventListener('resize', () => {
 						if (chartInstance) chartInstance.applyOptions({ width: container.clientWidth });
 					});
-					
-					setupInteractions(chart, candleSeries, posts);
-					console.log('Chart initialization complete');
+
+					setupInteractions(chart, posts);
+					renderMobileReportList(posts);
 				} catch (err) {
 					console.error('Chart Error:', err);
-					container.innerHTML = `<p style="color: #ef5350; padding: 20px;">차트를 불러오는 중 오류가 발생했습니다: ${err.message}</p>`;
+					container.innerHTML = `<p style="color:#ef5350;padding:20px;">차트를 불러오는 중 오류가 발생했습니다: ${err.message}</p>`;
 				} finally {
 					isInitializing = false;
 				}
 			}
 
-			function setupInteractions(chart, candleSeries, posts) {
+			function renderMobileReportList(posts) {
+				const el = document.getElementById('mobile-reports');
+				if (!el) return;
+
+				// 날짜 내림차순 정렬 후 날짜별 그룹핑
+				const sorted = [...posts].sort((a, b) => b.pubDate.localeCompare(a.pubDate));
+				const byDate = {};
+				sorted.forEach(post => {
+					if (!byDate[post.pubDate]) byDate[post.pubDate] = [];
+					byDate[post.pubDate].push(post);
+				});
+
+				el.innerHTML = Object.entries(byDate).map(([date, datePosts]) => `
+					<div class="mobile-date-group">
+						<p class="mobile-date-label">${date}</p>
+						${datePosts.map(post => `
+							<a class="mobile-report-card" href="/blog/${post.id}/">
+								<span class="mobile-report-title">${post.title}</span>
+								<span class="mobile-report-arrow">›</span>
+							</a>
+						`).join('')}
+					</div>
+				`).join('');
+			}
+
+			function setupInteractions(chart, posts) {
 				const newsPreview = document.getElementById('news-preview');
-				const spotlight = document.getElementById('spotlight');
-				const container = document.getElementById('chart-container');
+				const spotlight   = document.getElementById('spotlight');
+				const container   = document.getElementById('chart-container');
+
+				const toDateStr = (t) => typeof t === 'string' ? t :
+					`${t.year}-${String(t.month).padStart(2,'0')}-${String(t.day).padStart(2,'0')}`;
 
 				chart.subscribeCrosshairMove(param => {
 					if (!param.point || !param.time) {
 						newsPreview.style.display = 'none';
 						return;
 					}
-
-					const dateStr = typeof param.time === 'string' ? param.time : 
-									`${param.time.year}-${String(param.time.month).padStart(2, '0')}-${String(param.time.day).padStart(2, '0')}`;
-					
-					const post = posts.find(p => p.pubDate === dateStr);
-					if (post) {
+					const dateStr  = toDateStr(param.time);
+					const dayPosts = posts.filter(p => p.pubDate === dateStr);
+					if (dayPosts.length > 0) {
 						newsPreview.style.display = 'block';
-						
-						// Smart positioning to stay within container
 						const containerRect = container.getBoundingClientRect();
 						let left = param.point.x + 20;
-						let top = param.point.y + 20;
-						
+						let top  = param.point.y + 20;
 						if (left + 320 > containerRect.width) left = param.point.x - 340;
-						if (top + 150 > containerRect.height) top = param.point.y - 170;
-
+						if (top  + 150 > containerRect.height) top  = param.point.y - 170;
 						newsPreview.style.left = left + 'px';
-						newsPreview.style.top = top + 'px';
-						document.getElementById('preview-title').innerText = post.title;
-						document.getElementById('preview-desc').innerText = post.description || '';
+						newsPreview.style.top  = top  + 'px';
+						document.getElementById('preview-title').innerText = dayPosts[0].title;
+						document.getElementById('preview-desc').innerText  = dayPosts[0].description || '';
+						const countEl = newsPreview.querySelector('.preview-count');
+						if (dayPosts.length > 1) {
+							if (countEl) countEl.innerText = `+ ${dayPosts.length - 1}개 리포트 더 있음`;
+							else {
+								const span = document.createElement('span');
+								span.className = 'preview-count';
+								span.innerText = `+ ${dayPosts.length - 1}개 리포트 더 있음`;
+								newsPreview.appendChild(span);
+							}
+						} else if (countEl) {
+							countEl.innerText = '';
+						}
 					} else {
 						newsPreview.style.display = 'none';
 					}
@@ -390,19 +531,29 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 
 				chart.subscribeClick(param => {
 					if (!param.time) return;
-					const dateStr = typeof param.time === 'string' ? param.time : 
-									`${param.time.year}-${String(param.time.month).padStart(2, '0')}-${String(param.time.day).padStart(2, '0')}`;
-					const post = posts.find(p => p.pubDate === dateStr);
-					if (post) {
-						spotlight.classList.add('active');
-						document.getElementById('spotlight-date').innerText = post.pubDate;
-						document.getElementById('spotlight-title').innerText = post.title;
-						document.getElementById('spotlight-desc').innerText = post.description || '';
-						document.getElementById('spotlight-link').href = `/blog/${post.id}/`;
-						spotlight.scrollIntoView({ behavior: 'smooth' });
-					}
+					const dateStr  = toDateStr(param.time);
+					const dayPosts = posts.filter(p => p.pubDate === dateStr);
+					if (dayPosts.length === 0) return;
+
+					document.getElementById('spotlight-date').innerText = dateStr;
+					document.getElementById('spotlight-cards').innerHTML = dayPosts.map(post => `
+						<div class="spotlight-card">
+							<h3>${post.title}</h3>
+							<p>${post.description || ''}</p>
+							<a href="/blog/${post.id}/">전체 리포트 읽기</a>
+						</div>
+					`).join('');
+
+					spotlight.classList.add('active');
+					spotlight.scrollIntoView({ behavior: 'smooth' });
 				});
 			}
+
+			document.addEventListener('DOMContentLoaded', () => {
+				document.getElementById('symbol-select').addEventListener('change', function () {
+					initChart(this.value);
+				});
+			});
 
 			checkAndInit();
 		</script>
