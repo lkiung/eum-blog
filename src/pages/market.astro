@@ -383,37 +383,37 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 							title: 'Trend', priceLineVisible: false, lastValueVisible: false,
 						}).setData(macroData.map(d => ({ time: d.time, value: d.trend })));
 
-						// Z=2 / Z=-2 (항상 표시)
+						// Upper / Lower channel (항상 표시)
 						chart.addLineSeries({
-							color: 'rgba(239, 83, 80, 0.7)', lineWidth: 1, lineStyle: 3,
-							title: 'Z=2', priceLineVisible: false, lastValueVisible: false,
+							color: 'rgba(239, 83, 80, 0.9)', lineWidth: 2, lineStyle: 2,
+							title: 'Upper', priceLineVisible: false, lastValueVisible: true,
 						}).setData(macroData.map(d => ({ time: d.time, value: d.upper })));
 						chart.addLineSeries({
-							color: 'rgba(38, 166, 154, 0.7)', lineWidth: 1, lineStyle: 3,
-							title: 'Z=-2', priceLineVisible: false, lastValueVisible: false,
+							color: 'rgba(38, 166, 154, 0.9)', lineWidth: 2, lineStyle: 2,
+							title: 'Lower', priceLineVisible: false, lastValueVisible: true,
 						}).setData(macroData.map(d => ({ time: d.time, value: d.lower })));
 
-						// Z=1 / Z=-1 (항상 표시)
+						// Z=±1 (1σ, 항상 표시)
 						const m1 = macroData.filter(d => d.upper1 != null);
 						chart.addLineSeries({
-							color: 'rgba(239, 83, 80, 0.4)', lineWidth: 1, lineStyle: 3,
-							title: 'Z=1', priceLineVisible: false, lastValueVisible: false,
+							color: 'rgba(239, 83, 80, 0.5)', lineWidth: 1, lineStyle: 3,
+							title: 'Z=1', priceLineVisible: false, lastValueVisible: true,
 						}).setData(m1.map(d => ({ time: d.time, value: d.upper1 })));
 						chart.addLineSeries({
-							color: 'rgba(38, 166, 154, 0.4)', lineWidth: 1, lineStyle: 3,
-							title: 'Z=-1', priceLineVisible: false, lastValueVisible: false,
+							color: 'rgba(38, 166, 154, 0.5)', lineWidth: 1, lineStyle: 3,
+							title: 'Z=-1', priceLineVisible: false, lastValueVisible: true,
 						}).setData(m1.map(d => ({ time: d.time, value: d.lower1 })));
 
-						// Z=0.5 / Z=-0.5 (데스크탑만)
+						// Z=±0.5 (데스크탑만)
 						if (!isMobile) {
 							const m05 = macroData.filter(d => d.upper05 != null);
 							chart.addLineSeries({
-								color: 'rgba(239, 83, 80, 0.2)', lineWidth: 1, lineStyle: 3,
-								title: 'Z=0.5', priceLineVisible: false, lastValueVisible: false,
+								color: 'rgba(239, 83, 80, 0.3)', lineWidth: 1, lineStyle: 3,
+								title: 'Z=0.5', priceLineVisible: false, lastValueVisible: true,
 							}).setData(m05.map(d => ({ time: d.time, value: d.upper05 })));
 							chart.addLineSeries({
-								color: 'rgba(38, 166, 154, 0.2)', lineWidth: 1, lineStyle: 3,
-								title: 'Z=-0.5', priceLineVisible: false, lastValueVisible: false,
+								color: 'rgba(38, 166, 154, 0.3)', lineWidth: 1, lineStyle: 3,
+								title: 'Z=-0.5', priceLineVisible: false, lastValueVisible: true,
 							}).setData(m05.map(d => ({ time: d.time, value: d.lower05 })));
 						}
 					}
@@ -437,6 +437,32 @@ const postsBase64 = Buffer.from(postsJson).toString('base64');
 						chart.addLineSeries({ color, lineWidth: 1, title, priceLineVisible: false, lastValueVisible: false })
 							.setData(data.map(d => ({ time: d.time, value: d[key] })));
 					});
+
+					// --- Legend overlay ---
+					const legendItems = [
+						{ color: 'rgba(239, 83, 80, 0.9)',  label: 'Upper' },
+						{ color: 'rgba(239, 83, 80, 0.5)',  label: 'Z = +1' },
+						{ color: '#ff9800',                 label: 'Trend'  },
+						{ color: 'rgba(38, 166, 154, 0.5)', label: 'Z = -1' },
+						{ color: 'rgba(38, 166, 154, 0.9)', label: 'Lower'  },
+					];
+					const legend = document.createElement('div');
+					const wrapper = container.parentElement;
+					legend.style.cssText = [
+						'position:absolute', 'top:80px', 'left:32px', 'z-index:20',
+						'background:rgba(15,18,25,0.75)', 'border:1px solid rgba(255,255,255,0.12)',
+						'border-radius:8px', 'padding:8px 12px', 'font-size:11px',
+						'line-height:2', 'pointer-events:none', 'backdrop-filter:blur(6px)',
+					].join(';');
+					legend.innerHTML = legendItems.map(({ color, label }) =>
+						`<div style="display:flex;align-items:center;gap:7px;">` +
+						`<span style="display:inline-block;width:18px;height:2px;background:${color};border-radius:1px;flex-shrink:0;"></span>` +
+						`<span style="color:#d1d4dc;">${label}</span></div>`
+					).join('');
+					// 기존 legend 제거 후 wrapper에 추가 (심볼 전환 시 중복 방지)
+					wrapper.querySelectorAll('.chart-legend').forEach(el => el.remove());
+					legend.classList.add('chart-legend');
+					wrapper.appendChild(legend);
 
 					// --- Zoom to ~4 months (~85 trading days) ---
 					if (data.length > 10) {
