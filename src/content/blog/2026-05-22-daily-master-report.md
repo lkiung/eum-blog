@@ -1,5 +1,5 @@
 ---
-title: "[2026-05-22] AI 인프라 슈퍼사이클이 글로벌 시장을 재편합니다: 3\~4조 달러 자본지출 물결 헤쳐나가기"
+title: "[2026-05-22] AI 인프라 슈퍼사이클이 글로벌 시장을 재편합니다: 3~4조 달러 자본지출 물결 헤쳐나가기"
 description: "## Executive Summary..."
 pubDate: "2026-05-22"
 heroImage: "../../assets/hero.png"
